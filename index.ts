@@ -184,16 +184,17 @@ bot.on("message", async (msg: Message) => {
         return;
       }
       var name = ""
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 5; i++) {
         name += Math.floor(Math.random() * 10)
       }
+
       const req = generate_prompt(get_player(from.id, name), que);
-      console.log(req)
+      console.log(req.length)
       try {
         const ddgs = new DDGS();
         const response = await ddgs.chat(req, "gpt-4o-mini");
         llm_player_parse_description(response)
-        bot.sendMessage(chatId, response, {
+        bot.sendMessage(chatId, response.substring(0, response.indexOf("####ID:", 0)), {
           parse_mode: "Markdown",
           reply_to_message_id: msg.message_id,
         });

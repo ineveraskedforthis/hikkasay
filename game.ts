@@ -11,7 +11,7 @@ interface Player {
 interface GameState {
     turn: number,
     players_count: number
-    players: Player[];
+    players: Map<number, Player>;
     locations: string[];
     weapons: string[];
 }
@@ -19,7 +19,7 @@ interface GameState {
 var game_state: GameState = {
     turn: 13430,
     players_count: 0,
-    players: [],
+    players: new Map(),
     locations: ["Убежище", "Город", "Лес", "Фермы", "Кладбище", "Канализация", "Рынок"],
     weapons: ["Нет", "Меч", "Посох", "Копьё"]
 }
@@ -47,12 +47,14 @@ function llm_player_description() {
 }
 
 export function llm_player_parse_description(input: string) {
+    console.log("parsing description")
     let current_index = 0
     let stop = false
     let iterations = 10
-    while (!stop && current_index < input.length) {
-        console.log(iterations)
+
+    while (!stop && (current_index < input.length) && iterations > 0) {
         iterations--;
+        console.log(iterations)
         console.log(current_index)
         let index_id = input.indexOf("####ID:", current_index) + "####ID:".length
         let index_hp = input.indexOf("#HP:", index_id) + "#HP:".length
@@ -89,28 +91,33 @@ export function llm_player_parse_description(input: string) {
         if (isNaN(id)) {
             continue;
         }
-        if (game_state.players[id] == undefined) {
+        let target_player = game_state.players.get(id)
+        if (target_player == undefined) {
             continue;
         }
-        let hp = Math.min(game_state.players[id].max_hp, Math.max(0, parseInt(input.substring(index_hp, index_orbs))))
+        let hp = Math.min(target_player.max_hp, Math.max(0, parseInt(input.substring(index_hp, index_orbs))))
         if (!isNaN(id)) {
-            game_state.players[id].hp = hp
+            target_player.hp = hp
         }
         let orbs = Math.min(1000, Math.max(0, parseInt(input.substring(index_orbs, index_location))))
         if (!isNaN(orbs)) {
-            game_state.players[id].money = orbs
+            target_player.money = orbs
         }
         let location = input.substring(index_location, end)
         if (game_state.locations.includes(location)) {
-            game_state.players[id].location = location
+            target_player.location = location
         }
     }
 }
 
 function world_description() {
+    let desc = ""
+    game_state.players.forEach((value, key) => {
+        desc += player_description(value) + "\n"
+    })
     return `В мире присутствуют ${game_state.players_count} игроков.
     Описание игроков:
-        ${game_state.players.map(player_description).join("\n")}
+        ${desc}
     Возможные локации:
         ${game_state.locations.join("\n")}
     `
@@ -118,16 +125,24 @@ function world_description() {
 
 
 export function get_player(id: number, name: string) {
-    if (game_state.players[id] == undefined) {
-        game_state.players[id] = {
+    if (game_state.players.get(id) == undefined) {
+        game_state.players.set(id, {
             id: id, name: name, location: "Убежище", hp: 5, max_hp: 5, money: 0, weapon: ["Нет"]
-        }
+        })
     }
 
-    return game_state.players[id]
+    return id
 }
 
-export function generate_prompt(player: Player, input: string): string {
+export function generate_prompt(player_id: number, input: string): string {
+    console.log("new prompt")
+    console.log(game_state.players_count)
+
+    let player_name = game_state.players.get(player_id)?.name
+
+    if (player_name == undefined)
+        player_name = "Unknown"
+
     let success = Math.round(Math.random() * 10)
 
     return `Ты ведущий игровой сессии типичной настольной игры во вселенной Path Of Exile.
@@ -142,7 +157,7 @@ export function generate_prompt(player: Player, input: string): string {
         ${world_description()}
         Описание игрового мира завершено.
 
-        Сейчас будет действовать игрок Изгнанник ${player.name}.
+        Сейчас будет действовать игрок Изгнанник ${player_name}.
 
         Действие: [${input}]
         Успех действия: [${success}] при максимальном значении успеха 10.
