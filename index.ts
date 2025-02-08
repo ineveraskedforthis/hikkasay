@@ -1,6 +1,7 @@
 import DDGS from "./duckai";
 import TelegramBot, { Message } from "node-telegram-bot-api";
 import { casttemplate, hacktemplate, cthultemplate } from "./casttemplate";
+import { generate_prompt, get_player, llm_player_parse_description } from "./game"
 import dotenv from "dotenv";
 
 // Загружаем переменные окружения из .env файла
@@ -176,6 +177,37 @@ bot.on("message", async (msg: Message) => {
       }
     }
 
+    if (messageText.includes("путь")) {
+      const que = messageText.replace("путь", "").trim();
+      const from = msg.from
+      if (from == undefined) {
+        return;
+      }
+      var name = from.username
+      if (name == undefined) {
+        name = ""
+        for (let i = 0; i < 10; i++) {
+          name += Math.floor(Math.random() * 10)
+        }
+      }
+      const req = generate_prompt(get_player(from.id, name), que);
+      try {
+        const ddgs = new DDGS();
+        const response = await ddgs.chat(req, "gpt-4o-mini");
+        llm_player_parse_description(response)
+        bot.sendMessage(chatId, response, {
+          parse_mode: "Markdown",
+          reply_to_message_id: msg.message_id,
+        });
+        return;
+      } catch (error) {
+        console.error(error);
+        bot.sendMessage(
+          chatId,
+          "Произошла ошибка при обработке вашего запроса."
+        );
+      }
+    }
   }
 });
 
@@ -185,7 +217,7 @@ bot.on("message", async (msg: TelegramBot.Message) => {
   if (msg.chat.id !== chatId) {
     return; // Если чат не совпадает, выходим из функции
   }
-  
+
   if (msg.left_chat_member) {
     try {
       await bot.deleteMessage(chatId, msg.message_id);
@@ -194,7 +226,7 @@ bot.on("message", async (msg: TelegramBot.Message) => {
     }
   }
 
-  if (msg.new_chat_members) {    
+  if (msg.new_chat_members) {
     try {
       await bot.deleteMessage(chatId, msg.message_id);
     } catch (err) {
