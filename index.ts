@@ -177,8 +177,8 @@ bot.on("message", async (msg: Message) => {
       }
     }
 
-    if (messageText.includes("путь")) {
-      const que = messageText.replace("путь", "").trim();
+    if (messageText.includes("путь2")) {
+      const que = messageText.replace("путь2", "").trim();
       const from = msg.from
       if (from == undefined) {
         return;

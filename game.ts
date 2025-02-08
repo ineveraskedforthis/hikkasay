@@ -49,12 +49,18 @@ function llm_player_description() {
 export function llm_player_parse_description(input: string) {
     let current_index = 0
     let stop = false
-    while (!stop) {
+    let iterations = 10
+    while (!stop && current_index < input.length) {
+        console.log(iterations)
+        iterations--;
+        console.log(current_index)
         let index_id = input.indexOf("####ID:", current_index) + "####ID:".length
         let index_hp = input.indexOf("#HP:", index_id) + "#HP:".length
         let index_orbs = input.indexOf("#ORBS:", index_hp) + "#ORBS:".length
         let index_location = input.indexOf("#LOCATION:", index_orbs) + "#LOCATION:".length
         let end = input.indexOf("####", index_location)
+
+        console.log(index_id, index_hp, index_orbs, index_location, end)
 
         if (index_id == -1) {
             stop = true;
@@ -86,17 +92,14 @@ export function llm_player_parse_description(input: string) {
         if (game_state.players[id] == undefined) {
             continue;
         }
-
         let hp = Math.min(game_state.players[id].max_hp, Math.max(0, parseInt(input.substring(index_hp, index_orbs))))
         if (!isNaN(id)) {
             game_state.players[id].hp = hp
         }
-
         let orbs = Math.min(1000, Math.max(0, parseInt(input.substring(index_orbs, index_location))))
         if (!isNaN(orbs)) {
             game_state.players[id].money = orbs
         }
-
         let location = input.substring(index_location, end)
         if (game_state.locations.includes(location)) {
             game_state.players[id].location = location
@@ -147,11 +150,10 @@ export function generate_prompt(player: Player, input: string): string {
         Параметры для генерации:
 
         1. Опиши действие, которое игрок совершил, и оцени его последствия, если мало контекста - додумай (место, атмосфера, наблюдатели).
-        2. Определи подходящие сферы, которые могут быть задействованы в этом действии.
-        3. Определи сложность действия, учитывая контекст.
-        4. Используй значение успеха действия и сложность действия для оценки того, удалось ли игроку выполнить действие.
-        5. Стилистика: bodyhorror, dark fantasy (напряжение, но не обязательно катастрофа).
-        6. После описания действия в самом конце ответа опиши изменение состояния игроков, которые претерпели изменение в следующем формате:
+        2. Определи сложность действия, учитывая контекст.
+        3. Используй значение успеха действия и сложность действия для оценки того, удалось ли игроку выполнить действие.
+        4. Стилистика: bodyhorror, dark fantasy.
+        5. После описания действия в самом конце ответа опиши изменение состояния игроков, которые претерпели изменение в следующем формате:
         ${llm_player_description()}
         Напомню, что местоположение игрока обязано быть одним из следующих вариантов:
         ${game_state.locations.join("\n")}
