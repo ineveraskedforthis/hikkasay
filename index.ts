@@ -183,12 +183,9 @@ bot.on("message", async (msg: Message) => {
       if (from == undefined) {
         return;
       }
-      var name = from.username
-      if (name == undefined) {
-        name = ""
-        for (let i = 0; i < 10; i++) {
-          name += Math.floor(Math.random() * 10)
-        }
+      var name = ""
+      for (let i = 0; i < 10; i++) {
+        name += Math.floor(Math.random() * 10)
       }
       const req = generate_prompt(get_player(from.id, name), que);
       console.log(req)
