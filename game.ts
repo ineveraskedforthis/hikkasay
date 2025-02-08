@@ -92,7 +92,7 @@ export function llm_player_parse_description(input: string) {
             game_state.players[id].hp = hp
         }
 
-        let orbs = parseInt(input.substring(index_orbs, index_location))
+        let orbs = Math.min(1000, Math.max(0, parseInt(input.substring(index_orbs, index_location))))
         if (!isNaN(orbs)) {
             game_state.players[id].money = orbs
         }
