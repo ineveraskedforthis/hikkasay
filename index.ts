@@ -191,6 +191,7 @@ bot.on("message", async (msg: Message) => {
         }
       }
       const req = generate_prompt(get_player(from.id, name), que);
+      console.log(req)
       try {
         const ddgs = new DDGS();
         const response = await ddgs.chat(req, "gpt-4o-mini");
