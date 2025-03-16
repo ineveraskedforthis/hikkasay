@@ -1,4 +1,4 @@
-import DDGS from "./duckai";
+import OpenRouter from "./openrouter";
 import TelegramBot, { Message } from "node-telegram-bot-api";
 import { casttemplate, hacktemplate, cthultemplate } from "./casttemplate";
 import { generate_prompt, get_player, llm_player_parse_description } from "./game"
@@ -32,7 +32,12 @@ bot.getMe().then((me) => {
   botId = me.id; // Сохраняем ID бота
 });
 
-// Хикки запрос
+// Функция для экранирования символов в Markdown v2
+function escapeMarkdownV2(text: string) {
+  return text.replace(/([_*$$$$()~`>#+\-=|{}.!])/g, "\\$1");
+}
+
+// OpenRouter запрос
 bot.on("message", async (msg: Message) => {
   // Проверяем, что сообщение пришло из конкретного чата
   if (msg.chat.id !== chatId) {
@@ -42,13 +47,18 @@ bot.on("message", async (msg: Message) => {
   if (msg.text && msg.text.length > 0) {
     const messageText = msg.text.toString().toLowerCase();
 
-    if (messageText.includes("хикки")) {
-      const que = messageText.replace("хикки", "").trim();
+    if (messageText.includes("open")) {
+      const que = messageText.replace("open", "").trim();
       try {
-        const ddgs = new DDGS();
-        const response = await ddgs.chat(que, "gpt-4o-mini");
-        bot.sendMessage(chatId, response, {
-          parse_mode: "Markdown",
+        const openRouterInstance = new OpenRouter();
+        const response = await openRouterInstance.chat(que);
+
+        // Экранируем текст для Markdown v2
+        const escapedResponse = escapeMarkdownV2(response);
+
+        // Отправляем сообщение с использованием Markdown v2
+        bot.sendMessage(chatId, escapedResponse, {
+          parse_mode: "MarkdownV2",
           reply_to_message_id: msg.message_id,
         });
       } catch (error) {
@@ -62,7 +72,7 @@ bot.on("message", async (msg: Message) => {
   }
 });
 
-// Симуляция диалога
+// Симуляция диалога OpenRouter
 bot.on("message", async (msg: Message) => {
   // Проверяем, что сообщение пришло из конкретного чата
   if (msg.chat.id !== chatId) {
@@ -85,14 +95,18 @@ bot.on("message", async (msg: Message) => {
       const userText = msg.text;
 
       try {
-        const ddgs = new DDGS();
-        const response = await ddgs.chat(
-          `Прошлый твой ответ: ${prewAI}, а мой следующий вопрос: ${userText}`,
-          "gpt-4o-mini"
+        const openRouterInstance = new OpenRouter();
+        const response = await openRouterInstance.chat(
+          `Прошлый твой ответ: ${prewAI}, а мой следующий вопрос: ${userText}`
         );
-        await bot.sendMessage(chatId, response, {
-          parse_mode: "Markdown",
-          reply_to_message_id: msg.reply_to_message.message_id, // Используем правильный ID сообщения
+
+        // Экранируем текст для Markdown v2
+        const escapedResponse = escapeMarkdownV2(response);
+
+        // Отправляем сообщение с использованием Markdown v2
+        bot.sendMessage(chatId, escapedResponse, {
+          parse_mode: "MarkdownV2",
+          reply_to_message_id: msg.message_id,
         });
       } catch (error) {
         console.error(error);
@@ -121,10 +135,14 @@ bot.on("message", async (msg: Message) => {
       const que = messageText.replace("каст", "").trim();
       const req = casttemplate(que);
       try {
-        const ddgs = new DDGS();
-        const response = await ddgs.chat(req, "gpt-4o-mini");
-        bot.sendMessage(chatId, response, {
-          parse_mode: "Markdown",
+        const openRouterInstance = new OpenRouter();
+        const response = await openRouterInstance.chat(req);
+
+        // Экранируем текст для Markdown v2
+        const escapedResponse = escapeMarkdownV2(response);
+    
+        bot.sendMessage(chatId, escapedResponse, {
+          parse_mode: "MarkdownV2",
           reply_to_message_id: msg.message_id,
         });
         return
@@ -141,10 +159,14 @@ bot.on("message", async (msg: Message) => {
       const que = messageText.replace("хак", "").trim();
       const req = hacktemplate(que);
       try {
-        const ddgs = new DDGS();
-        const response = await ddgs.chat(req, "gpt-4o-mini");
-        bot.sendMessage(chatId, response, {
-          parse_mode: "Markdown",
+        const openRouterInstance = new OpenRouter();
+        const response = await openRouterInstance.chat(req);
+
+        // Экранируем текст для Markdown v2
+        const escapedResponse = escapeMarkdownV2(response);
+
+        bot.sendMessage(chatId, escapedResponse, {
+          parse_mode: "MarkdownV2",
           reply_to_message_id: msg.message_id,
         });
         return;
@@ -161,10 +183,14 @@ bot.on("message", async (msg: Message) => {
       const que = messageText.replace("ктул", "").trim();
       const req = cthultemplate(que);
       try {
-        const ddgs = new DDGS();
-        const response = await ddgs.chat(req, "gpt-4o-mini");
-        bot.sendMessage(chatId, response, {
-          parse_mode: "Markdown",
+        const openRouterInstance = new OpenRouter();
+        const response = await openRouterInstance.chat(req);
+
+        // Экранируем текст для Markdown v2
+        const escapedResponse = escapeMarkdownV2(response);
+
+        bot.sendMessage(chatId, escapedResponse, {
+          parse_mode: "MarkdownV2",
           reply_to_message_id: msg.message_id,
         });
         return;
