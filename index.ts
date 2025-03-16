@@ -217,8 +217,8 @@ bot.on("message", async (msg: Message) => {
       const req = generate_prompt(get_player(from.id, name), que);
       console.log(req.length)
       try {
-        const ddgs = new DDGS();
-        const response = await ddgs.chat(req, "gpt-4o-mini");
+        const openRouterInstance = new OpenRouter();
+        const response = await openRouterInstance.chat(req);
         llm_player_parse_description(response)
         bot.sendMessage(chatId, response.substring(0, response.indexOf("####ID:", 0)), {
           parse_mode: "Markdown",
