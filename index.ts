@@ -130,79 +130,6 @@ bot.on("message", async (msg: Message) => {
 
   if (msg.text && msg.text.length > 0) {
     const messageText = msg.text.toString().toLowerCase();
-
-    if (messageText.includes("каст")) {
-      const que = messageText.replace("каст", "").trim();
-      const req = casttemplate(que);
-      try {
-        const openRouterInstance = new OpenRouter();
-        const response = await openRouterInstance.chat(req);
-
-        // Экранируем текст для Markdown v2
-        const escapedResponse = escapeMarkdownV2(response);
-    
-        bot.sendMessage(chatId, escapedResponse, {
-          parse_mode: "MarkdownV2",
-          reply_to_message_id: msg.message_id,
-        });
-        return
-      } catch (error) {
-        console.error(error);
-        bot.sendMessage(
-          chatId,
-          "Произошла ошибка при обработке вашего запроса."
-        );
-      }
-    }
-
-    if (messageText.includes("хак")) {
-      const que = messageText.replace("хак", "").trim();
-      const req = hacktemplate(que);
-      try {
-        const openRouterInstance = new OpenRouter();
-        const response = await openRouterInstance.chat(req);
-
-        // Экранируем текст для Markdown v2
-        const escapedResponse = escapeMarkdownV2(response);
-
-        bot.sendMessage(chatId, escapedResponse, {
-          parse_mode: "MarkdownV2",
-          reply_to_message_id: msg.message_id,
-        });
-        return;
-      } catch (error) {
-        console.error(error);
-        bot.sendMessage(
-          chatId,
-          "Произошла ошибка при обработке вашего запроса."
-        );
-      }
-    }
-
-    if (messageText.includes("ктул")) {
-      const que = messageText.replace("ктул", "").trim();
-      const req = cthultemplate(que);
-      try {
-        const openRouterInstance = new OpenRouter();
-        const response = await openRouterInstance.chat(req);
-
-        // Экранируем текст для Markdown v2
-        const escapedResponse = escapeMarkdownV2(response);
-
-        bot.sendMessage(chatId, escapedResponse, {
-          parse_mode: "MarkdownV2",
-          reply_to_message_id: msg.message_id,
-        });
-        return;
-      } catch (error) {
-        console.error(error);
-        bot.sendMessage(
-          chatId,
-          "Произошла ошибка при обработке вашего запроса."
-        );
-      }
-    }
-
     if (messageText.includes("путь2")) {
       const que = messageText.replace("путь2", "").trim();
       const from = msg.from
@@ -232,30 +159,6 @@ bot.on("message", async (msg: Message) => {
           "Произошла ошибка при обработке вашего запроса."
         );
       }
-    }
-  }
-});
-
-// Удаление системных сообщений о входе/выходе
-bot.on("message", async (msg: TelegramBot.Message) => {
-  // Проверяем, что сообщение пришло из конкретного чата
-  if (msg.chat.id !== chatId) {
-    return; // Если чат не совпадает, выходим из функции
-  }
-
-  if (msg.left_chat_member) {
-    try {
-      await bot.deleteMessage(chatId, msg.message_id);
-    } catch (err) {
-      console.error(`Ошибка при удалении сообщения: ${err}`);
-    }
-  }
-
-  if (msg.new_chat_members) {
-    try {
-      await bot.deleteMessage(chatId, msg.message_id);
-    } catch (err) {
-      console.error(`Ошибка при удалении сообщения: ${err}`);
     }
   }
 });
